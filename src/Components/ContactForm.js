@@ -1,14 +1,19 @@
-import { useEffect, useRef, useState } from "react";
-import { Formik } from "formik";
-import * as Yup from "yup";
+import { useEffect, useState } from "react";
+// import { Formik, Form } from "formik";
+// import * as Yup from "yup";
+// import Input from "./Input";
+import Modal from "./Modal";
+import Form from "./InputForm";
 
 const ContactForm = () => {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [contact, setContact] = useState("");
   const [editedIndex, setEditedIndex] = useState(-1);
   const [closeModal, setCloseModal] = useState(true);
 
+  const [formValue, setFormValue] = useState({
+    name: "",
+    email: "",
+    contact: "",
+  });
   const [contactList, setContactList] = useState(() => {
     const savedContactList = localStorage.getItem("contactList");
     if (savedContactList) {
@@ -17,24 +22,8 @@ const ContactForm = () => {
       return [];
     }
   });
-  const inputRef = useRef(null);
 
   const handleAddContact = (values) => {
-    console.log("///////////////",values);
-    // if(!name || !email || !contact) {
-    //   alert("Please enter name, contact number and email address")
-    // }
-    //   else{
-    // add new contact if not editing
-    // if (
-    //   contactList.some(
-    //     (contactItem) =>
-    //       contactItem.email === email || contactItem.contact === contact
-    //   )
-    // ) {
-    //   alert("Dublicate contact or email found!");
-    //   return;
-    // }
     setContactList([
       ...contactList,
       {
@@ -43,34 +32,21 @@ const ContactForm = () => {
         contact: values.contact,
       },
     ]);
-    setName("");
-    setContact("");
-    setEmail("");
-    inputRef.current.focus();
-    console.log(name, email, contact);
-    // }
   };
-  const handleUpdateContact = () => {
-    if (!name || !email || !contact) {
-      alert("Please enter name, contact number and email address");
-      return;
-    }
+  const handleUpdateContact = (values) => {
     if (editedIndex >= 0) {
       const updatedContactList = contactList.map((contactItem, index) => {
         if (editedIndex === index) {
           return {
-            name: (contactItem.name = name),
-            email: (contactItem.email = email),
-            contact: (contactItem.contact = contact),
+            name: (contactItem.name = values.name),
+            email: (contactItem.email = values.email),
+            contact: (contactItem.contact = values.contact),
           };
         }
         return contactItem;
       });
       setContactList(updatedContactList);
       setEditedIndex(-1);
-      setName("");
-      setContact("");
-      setEmail("");
       setCloseModal(true);
     }
   };
@@ -80,9 +56,7 @@ const ContactForm = () => {
 
   const handleEditContact = (index) => {
     setCloseModal(false);
-    setName(contactList[index].name);
-    setEmail(contactList[index].email);
-    setContact(contactList[index].contact);
+    setFormValue(contactList[index]);
     setEditedIndex(index);
   };
   const handleDeleteContact = (index) => {
@@ -98,93 +72,7 @@ const ContactForm = () => {
       </header>
       <section className="container mx-auto bg-white grid grid-cols-12 py-16 items-start">
         <div className="shadow-2xl p-12 text-black rounded-xl col-span-12 lg:col-span-4">
-          <Formik
-            initialValues={{ name: "", contact: "", email: "" }}
-            validationSchema={Yup.object({
-              name: Yup.string()
-                .max(15, "Must be 15 characters or less")
-                .required("Required"),
-              contact: Yup.string()
-                .max(20, "Must be 20 characters or less")
-                .required("Required"),
-              email: Yup.string()
-                .email("Invalid email address")
-                .required("Required"),
-            })}
-            onSubmit={(values, { setSubmitting,resetForm }) => {
-              setTimeout(() => {
-                alert(JSON.stringify(values, null, 2));
-                handleAddContact(values)
-                resetForm();
-                setSubmitting(false);
-              }, 400);
-            }}
-          >
-            {(formik) => (
-              <form onSubmit={formik.handleSubmit} className="space-y-4">
-                <div>
-                  <label
-                    htmlFor="name"
-                    className="block mb-2 text-sm font-medium text-black"
-                  >
-                    Name <span className="text-red-600">*</span>
-                  </label>
-                  <input
-                    type="name"
-                    ref={inputRef}
-                    id="name"
-                    {...formik.getFieldProps("name")}
-                    className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-white dark:border-gray-600 dark:placeholder-gray-400 dark:focus:ring-primary-500 dark:focus:border-primary-500 dark:shadow-sm-light"
-                    placeholder="Happy Patel"
-                  />
-                  {formik.touched.name && formik.errors.name ? (
-                    <div className="text-red-500 text-sm">{formik.errors.name}</div>
-                  ) : null}
-                </div>
-                <div>
-                  <label
-                    htmlFor="contact"
-                    className="block mb-2 text-sm font-medium text-black"
-                  >
-                    Contact <span className="text-red-600">*</span>
-                  </label>
-                  <input
-                    type="number"
-                    id="contact"
-                    {...formik.getFieldProps("contact")}
-                    className="block p-3 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 shadow-sm focus:ring-primary-500 focus:border-primary-500 dark:bg-white dark:border-gray-600 dark:placeholder-gray-400 dark:focus:ring-primary-500 dark:focus:border-primary-500 dark:shadow-sm-light"
-                    placeholder="+91 8545126587"
-                  />
-                      {formik.touched.contact && formik.errors.contact ? (
-                      <div className="text-red-500 text-sm">{formik.errors.contact}</div>
-                    ) : null}
-                </div>
-                <div>
-                  <label
-                    htmlFor="email"
-                    className="block mb-2 text-sm font-medium text-black"
-                  >
-                    Email <span className="text-red-600">*</span>
-                  </label>
-                  <input
-                    type="email"
-                    id="email"
-                    {...formik.getFieldProps("email")}
-                    className="block p-3 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 shadow-sm focus:ring-primary-500 focus:border-primary-500 dark:bg-white dark:border-gray-600 dark:placeholder-gray-400 dark:focus:ring-primary-500 dark:focus:border-primary-500 dark:shadow-sm-light"
-                    placeholder="example@gmail.com"
-                  />
-                      {formik.touched.email && formik.errors.email ? (
-                        <div className="text-red-500 text-sm">{formik.errors.email}</div>
-                      ) : null}
-                </div>
-                <button
-                  className="flex ml-auto py-3 px-5 text-sm font-medium text-center text-white rounded-lg bg-gradiant sm:w-fit hover:bg-primary-800 focus:ring-4 focus:outline-none focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
-                >
-                  Save Contact
-                </button>
-              </form>
-            )}
-          </Formik>
+          <Form handleAddContact={handleAddContact} formValue={formValue} />
         </div>
         <div className="text-white px-5 col-span-12 lg:col-span-8 mt-10 lg:mt-0">
           <h1 className="text-black mb-5 text-xl font-bold">Contact List</h1>
@@ -264,112 +152,7 @@ const ContactForm = () => {
         </div>
       </section>
 
-      <div
-        id="default-modal"
-        tabIndex="-1"
-        aria-hidden="true"
-        className={` ${
-          closeModal ? "hidden" : ""
-        } overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full`}
-      >
-        <div className="relative p-4 w-full max-w-2xl max-h-full m-auto h-full flex items-center">
-          <div className="relative bg-white rounded-lg shadow w-full">
-            <div className="flex items-center justify-between p-4 md:p-5 rounded-t dark:border-gray-600">
-              <h3 className="text-xl font-semibold text-gray-900">
-                Update Contact
-              </h3>
-              <button
-                type="button"
-                className="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
-                onClick={handleCloseModal}
-              >
-                <svg
-                  className="w-3 h-3"
-                  aria-hidden="true"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 14 14"
-                >
-                  <path
-                    stroke="currentColor"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"
-                  />
-                </svg>
-                <span className="sr-only">Close modal</span>
-              </button>
-            </div>
-            <div className="p-4 md:p-5 space-y-4">
-              <form action="#" className="space-y-8 w-full">
-                <div>
-                  <label
-                    htmlFor="name"
-                    className="block mb-2 text-sm font-medium text-black"
-                  >
-                    Name <span className="text-red-600">*</span>
-                  </label>
-                  <input
-                    type="name"
-                    ref={inputRef}
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    id="name"
-                    className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-white dark:border-gray-600 dark:placeholder-gray-400 dark:focus:ring-primary-500 dark:focus:border-primary-500 dark:shadow-sm-light"
-                    placeholder="Happy Patel"
-                  />
-                </div>
-                <div>
-                  <label
-                    htmlFor="contact"
-                    className="block mb-2 text-sm font-medium text-black"
-                  >
-                    Contact <span className="text-red-600">*</span>
-                  </label>
-                  <input
-                    type="number"
-                    value={contact}
-                    onChange={(e) => setContact(e.target.value)}
-                    id="contact"
-                    className="block p-3 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 shadow-sm focus:ring-primary-500 focus:border-primary-500 dark:bg-white dark:border-gray-600 dark:placeholder-gray-400 dark:focus:ring-primary-500 dark:focus:border-primary-500 dark:shadow-sm-light"
-                    placeholder="+91 8545126587"
-                  />
-                </div>
-                <div>
-                  <label
-                    htmlFor="email"
-                    className="block mb-2 text-sm font-medium text-black"
-                  >
-                    Email <span className="text-red-600">*</span>
-                  </label>
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    id="email"
-                    className="block p-3 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 shadow-sm focus:ring-primary-500 focus:border-primary-500 dark:bg-white dark:border-gray-600 dark:placeholder-gray-400 dark:focus:ring-primary-500 dark:focus:border-primary-500 dark:shadow-sm-light"
-                    placeholder="example@gmail.com"
-                  />
-                </div>
-              </form>
-            </div>
-            <div className="flex items-center p-4 md:p-5 rounded-b dark:border-gray-600">
-              <button
-                className="flex ml-auto py-3 px-5 text-sm font-medium text-center text-white rounded-lg bg-gradiant sm:w-fit hover:bg-primary-800 focus:ring-4 focus:outline-none focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
-                onClick={handleUpdateContact}
-              >
-                Update Contact
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-      {closeModal ? (
-        ""
-      ) : (
-        <div className="shadow fixed left-0 w-full h-full bg-black top-0 bg-opacity-40"></div>
-      )}
+      <Modal closeModal={closeModal} handleCloseModal={handleCloseModal} formValue={formValue} handleUpdateContact={handleUpdateContact} />
     </>
   );
 };
