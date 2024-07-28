@@ -1,9 +1,10 @@
 import { Form, Formik } from "formik";
 import Input from "./Input";
 import * as Yup from "yup";
+import { addNewContact } from "../utils/helper";
 
 
-const InputForm = ({handleAddContact,formValue}) => {
+const InputForm = ({contactList, setContactList,formValue}) => {
   return(
     <Formik
       initialValues={formValue}
@@ -20,7 +21,8 @@ const InputForm = ({handleAddContact,formValue}) => {
       })}
       onSubmit={(values, { setSubmitting, resetForm }) => {
         setTimeout(() => {
-          handleAddContact(values);
+          console.log(values);
+          setContactList(addNewContact(contactList, values));
           resetForm();
           setSubmitting(false);
         }, 400);

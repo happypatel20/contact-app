@@ -1,38 +1,16 @@
 import { useEffect, useState } from "react";
-// import { Formik, Form } from "formik";
-// import * as Yup from "yup";
-// import Input from "./Input";
 import Modal from "./Modal";
-import Form from "./InputForm";
+import { initContactList, initFormValue } from "../utils/helper";
+import InputForm from "./InputForm";
 
 const ContactForm = () => {
   const [editedIndex, setEditedIndex] = useState(-1);
   const [closeModal, setCloseModal] = useState(true);
 
-  const [formValue, setFormValue] = useState({
-    name: "",
-    email: "",
-    contact: "",
-  });
-  const [contactList, setContactList] = useState(() => {
-    const savedContactList = localStorage.getItem("contactList");
-    if (savedContactList) {
-      return JSON.parse(savedContactList);
-    } else {
-      return [];
-    }
-  });
+  const [formValue, setFormValue] = useState(initFormValue);
 
-  const handleAddContact = (values) => {
-    setContactList([
-      ...contactList,
-      {
-        name: values.name,
-        email: values.email,
-        contact: values.contact,
-      },
-    ]);
-  };
+  const [contactList, setContactList] = useState(initContactList());
+
   const handleUpdateContact = (values) => {
     if (editedIndex >= 0) {
       const updatedContactList = contactList.map((contactItem, index) => {
@@ -56,15 +34,18 @@ const ContactForm = () => {
 
   const handleEditContact = (index) => {
     setCloseModal(false);
+    console.log("contactList",contactList);
     setFormValue(contactList[index]);
     setEditedIndex(index);
   };
+
   const handleDeleteContact = (index) => {
     setContactList(contactList.filter((_, i) => i !== index));
   };
   const handleCloseModal = () => {
     setCloseModal(true);
   };
+
   return (
     <>
       <header className="bg-gradiant p-5 text-white text-xl">
@@ -72,7 +53,7 @@ const ContactForm = () => {
       </header>
       <section className="container mx-auto bg-white grid grid-cols-12 py-16 items-start">
         <div className="shadow-2xl p-12 text-black rounded-xl col-span-12 lg:col-span-4">
-          <Form handleAddContact={handleAddContact} formValue={formValue} />
+          <InputForm contactList={contactList} setContactList={setContactList} formValue={formValue} />
         </div>
         <div className="text-white px-5 col-span-12 lg:col-span-8 mt-10 lg:mt-0">
           <h1 className="text-black mb-5 text-xl font-bold">Contact List</h1>

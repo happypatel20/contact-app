@@ -1,7 +1,6 @@
 import { Formik, Form } from "formik";
 import * as Yup from "yup";
 import Input from "./Input";
-// import InputForm from "./InputForm";
 
 const Modal = ({closeModal, handleCloseModal, formValue, handleUpdateContact}) => {
   return(
